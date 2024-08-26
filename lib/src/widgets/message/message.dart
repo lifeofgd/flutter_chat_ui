@@ -190,7 +190,7 @@ class Message extends StatelessWidget {
   final Widget Function(types.VideoMessage, {required int messageWidth})?
       videoMessageBuilder;
 
-  Widget _avatarBuilder() => showAvatar
+  Widget _avatarBuilder(BuildContext context) => showAvatar
       ? avatarBuilder?.call(message.author) ??
           UserAvatar(
             author: message.author,
@@ -198,7 +198,9 @@ class Message extends StatelessWidget {
             imageHeaders: imageHeaders,
             onAvatarTap: onAvatarTap,
           )
-      : const SizedBox(width: 40);
+      : SizedBox(
+          width: InheritedChatTheme.of(context).theme.userAvatarImageSize,
+        );
 
   Widget _bubbleBuilder(
     BuildContext context,
@@ -368,7 +370,7 @@ class Message extends StatelessWidget {
             ? null
             : TextDirection.ltr,
         children: [
-          if (!currentUserIsAuthor && showUserAvatars) _avatarBuilder(),
+          if (!currentUserIsAuthor && showUserAvatars) _avatarBuilder(context),
           if (currentUserIsAuthor && isLeftStatus) _statusIcon(context),
           ConstrainedBox(
             constraints: BoxConstraints(

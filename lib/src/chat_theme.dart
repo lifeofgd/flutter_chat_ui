@@ -114,6 +114,7 @@ abstract class ChatTheme {
     required this.userAvatarNameColors,
     required this.userAvatarTextStyle,
     required this.userNameTextStyle,
+    this.userAvatarImageSize = 40,
     this.highlightMessageColor,
   });
 
@@ -303,6 +304,9 @@ abstract class ChatTheme {
   /// image is provided.
   final TextStyle userAvatarTextStyle;
 
+  /// User avatar image size.
+  final double userAvatarImageSize;
+
   /// User names text style. Color will be overwritten with [userAvatarNameColors].
   final TextStyle userNameTextStyle;
 
@@ -480,6 +484,7 @@ class DefaultChatTheme extends ChatTheme {
       fontWeight: FontWeight.w800,
       height: 1.333,
     ),
+    super.userAvatarImageSize = 40,
     super.highlightMessageColor,
   });
 }
@@ -654,6 +659,7 @@ class DarkChatTheme extends ChatTheme {
       fontWeight: FontWeight.w800,
       height: 1.333,
     ),
+    super.userAvatarImageSize = 40,
     super.highlightMessageColor,
   });
 }
