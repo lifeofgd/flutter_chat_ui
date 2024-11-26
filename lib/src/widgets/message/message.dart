@@ -13,6 +13,7 @@ import 'image_message.dart';
 import 'message_status.dart';
 import 'text_message.dart';
 import 'user_avatar.dart';
+import 'user_name.dart';
 
 /// Base widget for all message types in the chat. Renders bubbles around
 /// messages and status. Sets maximum width for a message for
@@ -324,20 +325,34 @@ class Message extends StatelessWidget {
             bottomEnd: Radius.circular(
               !currentUserIsAuthor || roundBorder ? messageBorderRadius : 0,
             ),
-            bottomStart: Radius.circular(
-              currentUserIsAuthor || roundBorder ? messageBorderRadius : 0,
-            ),
+            bottomStart: !currentUserIsAuthor
+                ? Radius.circular(messageBorderRadius)
+                : Radius.circular(
+                    currentUserIsAuthor || roundBorder
+                        ? messageBorderRadius
+                        : 0,
+                  ),
             topEnd: Radius.circular(messageBorderRadius),
             topStart: Radius.circular(messageBorderRadius),
           )
         : BorderRadius.only(
-            bottomLeft: Radius.circular(
-              currentUserIsAuthor || roundBorder ? messageBorderRadius : 0,
-            ),
+            bottomLeft: !currentUserIsAuthor
+                ? Radius.circular(messageBorderRadius)
+                : Radius.circular(
+                    currentUserIsAuthor || roundBorder
+                        ? messageBorderRadius
+                        : 0,
+                  ),
             bottomRight: Radius.circular(
               !currentUserIsAuthor || roundBorder ? messageBorderRadius : 0,
             ),
-            topLeft: Radius.circular(messageBorderRadius),
+            topLeft: !currentUserIsAuthor
+                ? Radius.circular(
+                    currentUserIsAuthor || roundBorder
+                        ? messageBorderRadius
+                        : 0,
+                  )
+                : Radius.circular(messageBorderRadius),
             topRight: Radius.circular(messageBorderRadius),
           );
 
@@ -364,7 +379,7 @@ class Message extends StatelessWidget {
               : Alignment.centerLeft,
       margin: bubbleMargin,
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         textDirection: bubbleRtlAlignment == BubbleRtlAlignment.left
             ? null
@@ -377,8 +392,11 @@ class Message extends StatelessWidget {
               maxWidth: messageWidth.toDouble(),
             ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (showName)
+                  nameBuilder?.call(message.author) ??
+                      UserName(author: message.author),
                 GestureDetector(
                   onDoubleTap: () => onMessageDoubleTap?.call(context, message),
                   onLongPress: () => onMessageLongPress?.call(context, message),

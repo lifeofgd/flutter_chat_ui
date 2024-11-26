@@ -475,15 +475,15 @@ class ChatState extends State<Chat> {
         messageWidget = widget.systemMessageBuilder?.call(message) ??
             SystemMessage(message: message.text);
       } else {
+        final isMyMessage = message.author.id == widget.user.id;
         final maxWidth = widget.theme.messageMaxWidth;
-        final messageWidth =
-            widget.showUserAvatars && message.author.id != widget.user.id
-                ? min(constraints.maxWidth * widget.messageWidthRatio, maxWidth)
-                    .floor()
-                : min(
-                    constraints.maxWidth * (widget.messageWidthRatio + 0.06),
-                    maxWidth,
-                  ).floor();
+        final messageWidth = widget.showUserAvatars && isMyMessage
+            ? min(constraints.maxWidth * widget.messageWidthRatio, maxWidth)
+                .floor()
+            : min(
+                constraints.maxWidth * (widget.messageWidthRatio + 0.06),
+                maxWidth,
+              ).floor();
         final Widget msgWidget = Message(
           audioMessageBuilder: widget.audioMessageBuilder,
           avatarBuilder: widget.avatarBuilder,
@@ -515,8 +515,11 @@ class ChatState extends State<Chat> {
           },
           onMessageVisibilityChanged: widget.onMessageVisibilityChanged,
           onPreviewDataFetched: _onPreviewDataFetched,
-          roundBorder: map['nextMessageInGroup'] == true,
-          showAvatar: map['nextMessageInGroup'] == false,
+          roundBorder: isMyMessage
+              ? map['nextMessageInGroup'] == true
+              : map['isFirstInGroup'] == false,
+          showAvatar: map['nextMessageInGroup'] == true ||
+              map['nextMessageInGroup'] == true,
           showName: map['showName'] == true,
           showStatus: map['showStatus'] == true,
           isLeftStatus: widget.isLeftStatus,
