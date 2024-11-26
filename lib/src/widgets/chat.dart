@@ -519,7 +519,7 @@ class ChatState extends State<Chat> {
               ? map['nextMessageInGroup'] == true
               : map['isFirstInGroup'] == false,
           showAvatar: map['nextMessageInGroup'] == true ||
-              map['nextMessageInGroup'] == true,
+              map['isFirstInGroup'] == true,
           showName: map['showName'] == true,
           showStatus: map['showStatus'] == true,
           isLeftStatus: widget.isLeftStatus,
