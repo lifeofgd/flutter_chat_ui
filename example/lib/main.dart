@@ -1,14 +1,14 @@
-import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart' as intl;
 import 'package:mime/mime.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
@@ -215,14 +215,30 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void _loadMessages() async {
-    final response = await rootBundle.loadString('assets/messages.json');
-    final messages = (jsonDecode(response) as List)
-        .map((e) => types.Message.fromJson(e as Map<String, dynamic>))
-        .toList();
-
-    setState(() {
-      _messages = messages;
-    });
+    // final response = await rootBundle.loadString('assets/messages.json');
+    // final messages = (jsonDecode(response) as List)
+    //     .map((e) => types.Message.fromJson(e as Map<String, dynamic>))
+    //     .toList();
+    final now = DateTime.now();
+    _messages = List.generate(
+      10000,
+      (index) {
+        final at = now.subtract(Duration(minutes: index * 60));
+        final userId = Random().nextInt(3).toString();
+        return types.TextMessage(
+          author: types.User(
+            id: userId,
+            lastName: userId,
+            firstName: 'User',
+            role: types.Role.agent,
+          ),
+          id: at.toIso8601String(),
+          text: at.toIso8601String().substring(0, Random().nextInt(17) + 10),
+          createdAt: at.millisecondsSinceEpoch,
+        );
+      },
+    );
+    setState(() {});
   }
 
   @override
@@ -236,6 +252,8 @@ class _ChatPageState extends State<ChatPage> {
           showUserAvatars: true,
           showUserNames: true,
           user: _user,
+          createdAtBuilder: (createdAt) =>
+              Text(intl.DateFormat('a h:mm').format(createdAt)),
         ),
       );
 }

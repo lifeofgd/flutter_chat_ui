@@ -104,6 +104,7 @@ class Chat extends StatefulWidget {
     this.slidableMessageBuilder,
     this.isLeftStatus = false,
     this.messageWidthRatio = 0.72,
+    this.createdAtBuilder,
   });
 
   /// See [Message.audioMessageBuilder].
@@ -342,6 +343,9 @@ class Chat extends StatefulWidget {
   /// Width ratio for message bubble.
   final double messageWidthRatio;
 
+  /// Created at widget.
+  final Widget Function(DateTime createdAt)? createdAtBuilder;
+
   @override
   State<Chat> createState() => ChatState();
 }
@@ -529,6 +533,8 @@ class ChatState extends State<Chat> {
           usePreviewData: widget.usePreviewData,
           userAgent: widget.userAgent,
           videoMessageBuilder: widget.videoMessageBuilder,
+          createdAtBuilder:
+              map['showTime'] == false ? null : widget.createdAtBuilder,
         );
         messageWidget = widget.slidableMessageBuilder == null
             ? msgWidget

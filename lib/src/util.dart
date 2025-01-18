@@ -127,6 +127,7 @@ List<Object> calculateChatMessages(
     final message = messages[i];
     final messageHasCreatedAt = message.createdAt != null;
     final nextMessage = isLast ? null : messages[i - 1];
+    final previousMessage = isFirst ? null : messages[i + 1];
     final nextMessageHasCreatedAt = nextMessage?.createdAt != null;
     final nextMessageSameAuthor = message.author.id == nextMessage?.author.id;
     final notMyMessage = message.author.id != user.id;
@@ -138,8 +139,6 @@ List<Object> calculateChatMessages(
     var showName = false;
 
     if (showUserNames) {
-      final previousMessage = isFirst ? null : messages[i + 1];
-
       isFirstInGroup = notMyMessage &&
           ((message.author.id != previousMessage?.author.id) ||
               (messageHasCreatedAt &&
@@ -208,12 +207,35 @@ List<Object> calculateChatMessages(
       );
     }
 
+    var showTime = false;
+    if (previousMessage == null && nextMessage == null) {
+      showTime = true;
+    } else if (!nextMessageInGroup) {
+      showTime = true;
+    } else if (nextMessageInGroup && nextMessage != null) {
+      final nextCreatedAt = nextMessage.createdAt;
+      final createdAt = message.createdAt;
+      if (nextCreatedAt != null && createdAt != null) {
+        final formatter = DateFormat('yyyyMMddHHmm');
+        final at =
+            DateTime.fromMillisecondsSinceEpoch(createdAt, isUtc: dateIsUtc);
+        final nextAt =
+            DateTime.fromMillisecondsSinceEpoch(createdAt, isUtc: dateIsUtc);
+        if (formatter.format(at) == formatter.format(nextAt)) {
+          showTime = false;
+        } else {
+          showTime = true;
+        }
+      }
+    }
+
     chatMessages.insert(0, {
       'message': message,
       'nextMessageInGroup': nextMessageInGroup,
       'isFirstInGroup': isFirstInGroup,
       'showName': notMyMessage && showUserNames && showName,
       'showStatus': message.showStatus ?? true,
+      'showTime': showTime,
     });
 
     if (!nextMessageInGroup && message.type != types.MessageType.system) {
@@ -226,7 +248,8 @@ List<Object> calculateChatMessages(
       );
     }
 
-    if (nextMessageDifferentDay || nextMessageDateThreshold) {
+    // nextMessageDifferentDay 인 경우에만 DateHeader 추가
+    if (nextMessageDifferentDay) {
       chatMessages.insert(
         0,
         DateHeader(

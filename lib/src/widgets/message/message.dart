@@ -56,6 +56,7 @@ class Message extends StatelessWidget {
     required this.usePreviewData,
     this.userAgent,
     this.videoMessageBuilder,
+    this.createdAtBuilder,
   });
 
   /// Build an audio message inside predefined bubble.
@@ -191,6 +192,9 @@ class Message extends StatelessWidget {
   final Widget Function(types.VideoMessage, {required int messageWidth})?
       videoMessageBuilder;
 
+  /// Created at widget.
+  final Widget Function(DateTime createdAt)? createdAtBuilder;
+
   Widget _avatarBuilder(BuildContext context) => showAvatar
       ? avatarBuilder?.call(message.author) ??
           UserAvatar(
@@ -306,6 +310,41 @@ class Message extends StatelessWidget {
     );
   }
 
+  Widget _buildBubble(
+    BuildContext context,
+    BorderRadiusGeometry borderRadius,
+    bool currentUserIsAuthor,
+    bool enlargeEmojis,
+  ) =>
+      Flexible(
+        child: GestureDetector(
+          onDoubleTap: () => onMessageDoubleTap?.call(context, message),
+          onLongPress: () => onMessageLongPress?.call(context, message),
+          onTap: () => onMessageTap?.call(context, message),
+          child: onMessageVisibilityChanged != null
+              ? VisibilityDetector(
+                  key: Key(message.id),
+                  onVisibilityChanged: (visibilityInfo) =>
+                      onMessageVisibilityChanged!(
+                    message,
+                    visibilityInfo.visibleFraction > 0.1,
+                  ),
+                  child: _bubbleBuilder(
+                    context,
+                    borderRadius.resolve(Directionality.of(context)),
+                    currentUserIsAuthor,
+                    enlargeEmojis,
+                  ),
+                )
+              : _bubbleBuilder(
+                  context,
+                  borderRadius.resolve(Directionality.of(context)),
+                  currentUserIsAuthor,
+                  enlargeEmojis,
+                ),
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     final query = MediaQuery.of(context);
@@ -397,31 +436,37 @@ class Message extends StatelessWidget {
                 if (showName)
                   nameBuilder?.call(message.author) ??
                       UserName(author: message.author),
-                GestureDetector(
-                  onDoubleTap: () => onMessageDoubleTap?.call(context, message),
-                  onLongPress: () => onMessageLongPress?.call(context, message),
-                  onTap: () => onMessageTap?.call(context, message),
-                  child: onMessageVisibilityChanged != null
-                      ? VisibilityDetector(
-                          key: Key(message.id),
-                          onVisibilityChanged: (visibilityInfo) =>
-                              onMessageVisibilityChanged!(
-                            message,
-                            visibilityInfo.visibleFraction > 0.1,
-                          ),
-                          child: _bubbleBuilder(
-                            context,
-                            borderRadius.resolve(Directionality.of(context)),
-                            currentUserIsAuthor,
-                            enlargeEmojis,
-                          ),
-                        )
-                      : _bubbleBuilder(
-                          context,
-                          borderRadius.resolve(Directionality.of(context)),
-                          currentUserIsAuthor,
-                          enlargeEmojis,
+                Row(
+                  mainAxisAlignment: currentUserIsAuthor
+                      ? MainAxisAlignment.end
+                      : MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    if (currentUserIsAuthor &&
+                        message.createdAt != null &&
+                        createdAtBuilder != null) ...[
+                      createdAtBuilder!.call(
+                        DateTime.fromMillisecondsSinceEpoch(
+                          message.createdAt!,
                         ),
+                      ),
+                      const SizedBox(width: 4),
+                    ],
+                    _buildBubble(
+                      context,
+                      borderRadius,
+                      currentUserIsAuthor,
+                      enlargeEmojis,
+                    ),
+                    if (!currentUserIsAuthor &&
+                        message.createdAt != null &&
+                        createdAtBuilder != null) ...[
+                      const SizedBox(width: 4),
+                      createdAtBuilder!.call(
+                        DateTime.fromMillisecondsSinceEpoch(message.createdAt!),
+                      ),
+                    ],
+                  ],
                 ),
               ],
             ),
